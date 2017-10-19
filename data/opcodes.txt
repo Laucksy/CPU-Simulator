@@ -27,7 +27,7 @@ STURB, M, 010111, store byte
 
 CBZ, B, 011000, compare and branch on equal 0
 CBNZ, B, 011001, compare and branch on not equal 0
-B,cond, B, 011010, branch conditionally
+B.cond, B, 011010, branch conditionally
 
 B, B, 011011, branch
 BR, B, 011100, branch to register
