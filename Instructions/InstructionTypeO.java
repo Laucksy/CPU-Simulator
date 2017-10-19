@@ -1,3 +1,5 @@
+package Instructions;
+
 public class InstructionTypeO extends Instruction {
     private String value;
 
@@ -11,14 +13,18 @@ public class InstructionTypeO extends Instruction {
     }
 
     public String[] getParams() {
-        return new String[] {this.mnemonic, this.opcode, this,value};
+        return new String[] {this.mnemonic, this.opcode, this.value};
+    }
+
+    public String getPlain() {
+        return this.mnemonic + " " + this.value;
     }
 
     public String getBinary() {
-        return "binary";
+        return this.opcode + this.decimalToBinary(value, 26);
     }
 
     public String getHex() {
-        return "hex";
+        return Integer.toHexString(Integer.parseInt(this.getBinary(), 2));
     }
 }

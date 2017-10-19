@@ -1,3 +1,5 @@
+package Instructions;
+
 public class InstructionTypeR extends Instruction {
     private String first;
     private String second;
@@ -32,11 +34,18 @@ public class InstructionTypeR extends Instruction {
         return new String[] {this.mnemonic, this.opcode, this.first, this.second, this.target, this.shift};
     }
 
+    public String getPlain() {
+        return this.mnemonic + " " + this.first + ", " + this.second + ", " + this.target;
+    }
+
     public String getBinary() {
-        return "binary";
+        return this.opcode + this.decimalToBinary(first.substring(1), 5)
+                            + this.decimalToBinary(second.substring(1), 5)
+                            + this.decimalToBinary(target.substring(1), 5)
+                            + this.decimalToBinary(shift, 11);
     }
 
     public String getHex() {
-        return "hex";
+        return Integer.toHexString(Integer.parseInt(this.getBinary(), 2));
     }
 }
