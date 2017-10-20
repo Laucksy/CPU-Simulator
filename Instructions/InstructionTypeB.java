@@ -21,7 +21,11 @@ public class InstructionTypeB extends Instruction {
     }
 
     public String getBinary() {
-        return this.opcode + this.decimalToBinary(address.substring(26), 5);
+        if (this.address.substring(0, 2).equals("0x")) {
+            return this.opcode + this.decimalToBinary(this.address.substring(2), 26);
+        } else {
+            return this.opcode + this.address + this.decimalToBinary("0", 26 - this.address.length());
+        }
     }
 
     public String getHex() {
