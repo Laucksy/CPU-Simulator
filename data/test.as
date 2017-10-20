@@ -8,6 +8,7 @@ main:
        ;MOVZ x0, data      ; store pointer at data to x0
        LDUR x1, [x0, #0]  ; load data at start into register x1
        ADD  x2, x2, x1    ; add 0xAB to 10 and store in register x2
+       B main
        HALT               ; halt the processor
 
 .pos 0x100                ; set image location to 0x100
