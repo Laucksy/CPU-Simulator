@@ -32,7 +32,7 @@ public class Assembler {
 
         for(int i = 0; i < tokens.size(); i++) {
             String[] line = tokens.get(i);
-            System.out.println(Arrays.asList(line));
+            // System.out.println(Arrays.asList(line));
 
             if (line.length == 0) {}
             else if (i <= 2) {
@@ -43,25 +43,39 @@ public class Assembler {
                 if (i == 2) write(file, format + ":WS-" + wordsize + ":RC-" + regcnt + ":MM-" + maxmem);
             } else if (line[0].charAt(0) == '.') {
                 if (line[0].equals(".pos")) {
-                    //int newPos = Integer.parseInt(line[1].substring(2), 16);
-                    //while (this.bytesWritten < newPos) write(file, "00000000");
+                    int newPos = Integer.parseInt(line[1].substring(2), 16);
+                    while (this.bytesWritten < newPos) write(file, "00000000");
                 } else if (line[0].equals(".align")) {
                     this.align = Integer.parseInt(line[1]);
-                } else if (line[0].equals(".double")) {
+                } else if (line[0].equals(".double") || line[0].equals(".single") || line[0].equals(".half") || line[0].equals(".byte")) {
+                    int bytes = 8;
+                    if (line[0].equals(".single")) bytes = 4;
+                    if (line[0].equals(".half")) bytes = 2;
+                    if (line[0].equals(".byte")) bytes = 1;
 
+                    String unpadded = line[1].substring(2);
+                    if (!hex) unpadded = Integer.toBinaryString(Integer.parseInt(unpadded, 16));
+
+                    if (hex) while (unpadded.length() < bytes) unpadded = "0" + unpadded;
+                    else while (unpadded.length() < bytes * 8) unpadded = "0" + unpadded;
+                    // System.out.println("TRANSLATION " + unpadded);
+                    write(file, unpadded);
+
+                    while (this.bytesWritten % this.align != 0) write(file, "00000000");
                 }
             } else if (line[0].charAt(line[0].length() - 1) == ':') {
-                int bytesPerLabel = (maxmem.length() - 2) / 2;
-                labels.add(new String[] {line[0], (new Integer(this.bytesWritten)).toString()});
+                labels.add(new String[] {line[0].substring(0, line[0].length() - 1), (new Integer(this.bytesWritten)).toString()});
             } else {
                 Instruction instruction = extract(line);
                 if (instruction != null) {
-                    System.out.println("TRANSLATION " + instruction.getPlain() + "     " + instruction.getBinary());
+                    // System.out.println("TRANSLATION " + instruction.getPlain() + "     " + instruction.getBinary());
                     write(file, hex ? instruction.getHex() : instruction.getBinary());
+                    while (this.bytesWritten % this.align != 0) write(file, "00000000");
                 }
             }
         }
         if (this.writer != null) this.writer.close();
+        this.replaceLabelsAddSpace(file, labels);
     }
 
     private Instruction extract(String[] line) {
@@ -168,7 +182,42 @@ public class Assembler {
         } else {
             this.bytesWritten += line.length() / 8;
             this.writer.print(line);
-            if (bytesWritten % 4 == 0) this.writer.println();
         }
     }
+
+    private void replaceLabelsAddSpace(String file, ArrayList<String[]> labels) {
+        try {
+            Scanner reader = new Scanner(new File(file));
+            String line1 = reader.nextLine();
+            String data = reader.nextLine();
+
+            this.writer = new PrintWriter(new FileWriter(file));
+
+            this.writer.println(line1);
+
+            // for (String[] l : labels) System.out.println(Arrays.asList(l));
+            for(int i = 0; i < labels.size(); i++) {
+                while (data.contains(labels.get(i)[0])) {
+                    String unpadded = Integer.toBinaryString(Integer.parseInt(labels.get(i)[1]));
+                    while (unpadded.length() < 32) unpadded = "0" + unpadded;
+                    data = data.substring(0, data.indexOf(labels.get(i)[0])) + unpadded + data.substring(data.indexOf(labels.get(i)[0]) + 32);
+                }
+            }
+
+            int bitsInLine = 0;
+            for(int i = 0; i < data.length(); i++) {
+                this.writer.print(data.charAt(i));
+                bitsInLine++;
+                if (bitsInLine % 32 == 0) {
+                    bitsInLine = 0;
+                    this.writer.println();
+                } else if (bitsInLine % 8 == 0) this.writer.print("\t");
+            }
+            this.writer.close();
+        } catch(Exception e) {
+            System.out.println(e);
+            return;
+        }
+    }
+
 }
