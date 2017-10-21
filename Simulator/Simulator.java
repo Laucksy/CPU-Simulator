@@ -111,19 +111,19 @@ public class Simulator {
                 char[] firstReg = pad(this.registers[first], 32);
                 char[] secondReg = pad(this.registers[second], 32);
 
-                System.out.println("R INS " + ins);
-                System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
+                // System.out.println("R INS " + ins);
+                // System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("ADD")) this.registers[target] = ArithmeticOperations.add(firstReg, secondReg);
-                else if (mnemonic.equals("ADDS")) this.registers[target] = ArithmeticOperations.add(firstReg, secondReg);
-                else if (mnemonic.equals("SUB")) this.registers[target] = ArithmeticOperations.subtract(firstReg, secondReg);
-                else if (mnemonic.equals("SUBS")) this.registers[target] = ArithmeticOperations.subtract(firstReg, secondReg);
+                if (mnemonic.equals("ADD")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
+                else if (mnemonic.equals("ADDS")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
+                else if (mnemonic.equals("SUB")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
+                else if (mnemonic.equals("SUBS")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
 
-                else if (mnemonic.equals("AND")) this.registers[target] = LogicalOperations.and(firstReg, secondReg);
-                else if (mnemonic.equals("IOR")) this.registers[target] = LogicalOperations.ior(firstReg, secondReg);
-                else if (mnemonic.equals("EOR")) this.registers[target] = LogicalOperations.eor(firstReg, secondReg);
+                else if (mnemonic.equals("AND")) setRegister(target, LogicalOperations.and(firstReg, secondReg));
+                else if (mnemonic.equals("IOR")) setRegister(target, LogicalOperations.ior(firstReg, secondReg));
+                else if (mnemonic.equals("EOR")) setRegister(target, LogicalOperations.eor(firstReg, secondReg));
 
-                System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
+                // System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
             } else if (type.equals("I")) {
                 int first = Integer.parseInt(ins.substring(6, 11), 2);
                 int target = Integer.parseInt(ins.substring(11, 16), 2);
@@ -131,20 +131,20 @@ public class Simulator {
 
                 char[] firstReg = pad(this.registers[first], 32);
 
-                System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("ADDI")) this.registers[target] = ArithmeticOperations.add(firstReg, immediate);
-                else if (mnemonic.equals("ADDIS")) this.registers[target] = ArithmeticOperations.add(firstReg, immediate);
-                else if (mnemonic.equals("SUBI")) this.registers[target] = ArithmeticOperations.subtract(firstReg, immediate);
-                else if (mnemonic.equals("SUBIS")) this.registers[target] = ArithmeticOperations.subtract(firstReg, immediate);
+                if (mnemonic.equals("ADDI")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
+                else if (mnemonic.equals("ADDIS")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
+                else if (mnemonic.equals("SUBI")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
+                else if (mnemonic.equals("SUBIS")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
 
-                else if (mnemonic.equals("ANDI")) this.registers[target] = LogicalOperations.and(firstReg, immediate);
-                else if (mnemonic.equals("IORI")) this.registers[target] = LogicalOperations.ior(firstReg, immediate);
-                else if (mnemonic.equals("EORI")) this.registers[target] = LogicalOperations.eor(firstReg, immediate);
-                else if (mnemonic.equals("LSL")) this.registers[target] = LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16, 21), 2));
-                else if (mnemonic.equals("LSR")) this.registers[target] = LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16, 21), 2));
+                else if (mnemonic.equals("ANDI")) setRegister(target, LogicalOperations.and(firstReg, immediate));
+                else if (mnemonic.equals("IORI")) setRegister(target, LogicalOperations.ior(firstReg, immediate));
+                else if (mnemonic.equals("EORI")) setRegister(target, LogicalOperations.eor(firstReg, immediate));
+                else if (mnemonic.equals("LSL")) setRegister(target, LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16), 2)));
+                else if (mnemonic.equals("LSR")) setRegister(target, LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16), 2)));
 
-                System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
             }
 
             // char[] result = ArithmeticOperations.add(ArithmeticOperations.convertString("1111"), ArithmeticOperations.complement(ArithmeticOperations.convertString("1010")));
@@ -199,5 +199,10 @@ public class Simulator {
         String result = "";
         for (int i = 0; i < arr.length; i++) result = result + arr[i];
         return result;
+    }
+
+    public void setRegister(int reg, char[] val) {
+        System.out.println("SET REGISTER " + reg + " from " + printCharArray(this.registers[reg]) + " to " + printCharArray(val));
+        this.registers[reg] = val;
     }
 }
