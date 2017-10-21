@@ -18,7 +18,7 @@ LSR, I, 001111, logical shift right
 
 LDUR, M, 010000, load register
 STUR, M, 010001, store register
-LDURW, M, 010010, load signed word
+LDURW, M, 010010, load word
 STURW, M, 010011, store word
 LDURH, M, 010100, load half
 STURH, M, 010101, store half
