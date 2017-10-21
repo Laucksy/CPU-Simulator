@@ -35,6 +35,17 @@ main:
        ADDI x9, x9, #260
        LDURB x9, [x9, #3]
 
+       ANDI x9, x9, #0
+       ADDI x9, x9, #27
+       ADDI x10, x10, #520
+       STUR x9, [x10, #0]
+       ADDI x11, x11, #524
+       STURW x9, [x11, #0]
+       ADDI x12, x12, #528
+       STURH x9, [x12, #2]
+       ADDI x13, x13, #532
+       STURB x9, [x13, #3]
+
        ;LDUR x1, [x0, #0]
        ;ADD  x2, x2, x1
        ;B main
