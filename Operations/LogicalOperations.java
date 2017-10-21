@@ -33,4 +33,26 @@ public class LogicalOperations {
         }
         return num;
     }
+
+    public static char[] lsl(char[] one, int shift) {
+        char[] num = new char[32];
+        for (int i = 0; i < 32; i++) num[i] = '0';
+
+        for (int i = 0; i < 32; i++) {
+            if (i + shift < one.length) num[i] = one[i + shift];
+            else num[i] = '0';
+        }
+        return num;
+    }
+
+    public static char[] lsr(char[] one, int shift) {
+        char[] num = new char[32];
+        for (int i = 0; i < 32; i++) num[i] = '0';
+
+        for (int i = 0; i < 32; i++) {
+            if (i - shift > one.length) num[i] = one[i - shift];
+            else num[i] = '0';
+        }
+        return num;
+    }
 }
