@@ -103,34 +103,48 @@ public class Simulator {
             String type = InstructionList.getTypeFromMnemonic(mnemonic);
             System.out.println(mnemonic + " " + type);
 
-            if (type.equals("R") {
+            if (type.equals("R")) {
                 int first = Integer.parseInt(ins.substring(6, 11), 2);
                 int second = Integer.parseInt(ins.substring(11, 16), 2);
                 int target = Integer.parseInt(ins.substring(16, 21), 2);
 
-                if (mnemonic.equals("ADD")) this.registers[target] = ArithmeticOperations.add(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("ADDS")) this.registers[target] = ArithmeticOperations.add(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("SUB")) this.registers[target] = ArithmeticOperations.subtract(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("SUBS")) this.registers[target] = ArithmeticOperations.subtract(this.registers[first], this.registers[second]);
+                char[] firstReg = pad(this.registers[first], 32);
+                char[] secondReg = pad(this.registers[second], 32);
 
-                else if (mnemonic.equals("AND")) this.registers[target] = LogicalOperations.and(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("IOR")) this.registers[target] = LogicalOperations.ior(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("EOR")) this.registers[target] = LogicalOperations.eor(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("LSL")) this.registers[target] = LogicalOperations.lsl(this.registers[first], this.registers[second]);
-                else if (mnemonic.equals("LSR")) this.registers[target] = LogicalOperations.lsr(this.registers[first], this.registers[second]);
-            } else if (type.equals("I") {
+                System.out.println("R INS " + ins);
+                System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
+
+                if (mnemonic.equals("ADD")) this.registers[target] = ArithmeticOperations.add(firstReg, secondReg);
+                else if (mnemonic.equals("ADDS")) this.registers[target] = ArithmeticOperations.add(firstReg, secondReg);
+                else if (mnemonic.equals("SUB")) this.registers[target] = ArithmeticOperations.subtract(firstReg, secondReg);
+                else if (mnemonic.equals("SUBS")) this.registers[target] = ArithmeticOperations.subtract(firstReg, secondReg);
+
+                else if (mnemonic.equals("AND")) this.registers[target] = LogicalOperations.and(firstReg, secondReg);
+                else if (mnemonic.equals("IOR")) this.registers[target] = LogicalOperations.ior(firstReg, secondReg);
+                else if (mnemonic.equals("EOR")) this.registers[target] = LogicalOperations.eor(firstReg, secondReg);
+
+                System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
+            } else if (type.equals("I")) {
                 int first = Integer.parseInt(ins.substring(6, 11), 2);
                 int target = Integer.parseInt(ins.substring(11, 16), 2);
-                char[] immediate = ArithmeticOperations.convertString(ins.substring(16, 21));
+                char[] immediate = ArithmeticOperations.convertString(ins.substring(16));
 
-                if (mnemonic.equals("ADDI")) this.registers[target] = ArithmeticOperations.add(this.registers[first], immediate);
-                else if (mnemonic.equals("ADDIS")) this.registers[target] = ArithmeticOperations.add(this.registers[first], immediate);
-                else if (mnemonic.equals("SUBI")) this.registers[target] = ArithmeticOperations.subtract(this.registers[first], immediate);
-                else if (mnemonic.equals("SUBIS")) this.registers[target] = ArithmeticOperations.subtract(this.registers[first], immediate);
+                char[] firstReg = pad(this.registers[first], 32);
 
-                else if (mnemonic.equals("ANDI")) this.registers[target] = LogicalOperations.and(this.registers[first], immediate);
-                else if (mnemonic.equals("IORI")) this.registers[target] = LogicalOperations.ior(this.registers[first], immediate);
-                else if (mnemonic.equals("EORI")) this.registers[target] = LogicalOperations.eor(this.registers[first], immediate);
+                System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+
+                if (mnemonic.equals("ADDI")) this.registers[target] = ArithmeticOperations.add(firstReg, immediate);
+                else if (mnemonic.equals("ADDIS")) this.registers[target] = ArithmeticOperations.add(firstReg, immediate);
+                else if (mnemonic.equals("SUBI")) this.registers[target] = ArithmeticOperations.subtract(firstReg, immediate);
+                else if (mnemonic.equals("SUBIS")) this.registers[target] = ArithmeticOperations.subtract(firstReg, immediate);
+
+                else if (mnemonic.equals("ANDI")) this.registers[target] = LogicalOperations.and(firstReg, immediate);
+                else if (mnemonic.equals("IORI")) this.registers[target] = LogicalOperations.ior(firstReg, immediate);
+                else if (mnemonic.equals("EORI")) this.registers[target] = LogicalOperations.eor(firstReg, immediate);
+                else if (mnemonic.equals("LSL")) this.registers[target] = LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16, 21), 2));
+                else if (mnemonic.equals("LSR")) this.registers[target] = LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16, 21), 2));
+
+                System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
             }
 
             // char[] result = ArithmeticOperations.add(ArithmeticOperations.convertString("1111"), ArithmeticOperations.complement(ArithmeticOperations.convertString("1010")));
@@ -171,5 +185,19 @@ public class Simulator {
         while (binary.length() < 8) binary = "0" + binary;
         if (binary.length() > 8) binary = binary.substring(binary.length() - 8);
         return binary;
+    }
+
+    public char[] pad(char[] arr, int size) {
+        char[] num = new char[32];
+        for (int i = 0; i < 32; i++) num[i] = '0';
+
+        for (int i = arr.length - 1; i >= 0; i--) num[i] = arr[i];
+        return num;
+    }
+
+    public String printCharArray(char[] arr) {
+        String result = "";
+        for (int i = 0; i < arr.length; i++) result = result + arr[i];
+        return result;
     }
 }
