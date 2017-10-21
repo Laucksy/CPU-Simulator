@@ -1,5 +1,5 @@
 .wordsize 16              ; sets the machine wordsize
-.regcnt    8              ; 4 general purpose registers
+.regcnt   16              ; 4 general purpose registers
 .maxmem   0x400      ; max memory size is 32 bytes
 
 .pos 0x0
@@ -26,10 +26,19 @@ main:
        LSL x5, x5, #3
        LSR x5, x5, #2
 
-       LDUR x1, [x0, #0]
-       ADD  x2, x2, x1
-       B main
-       HALT               ; halt the processor
+       ADDI x6, x6, #260
+       LDUR x6, [x6, #0]
+       ADDI x7, x7, #260
+       LDURW x7, [x7, #0]
+       ADDI x8, x8, #260
+       LDURH x8, [x8, #2]
+       ADDI x9, x9, #260
+       LDURB x9, [x9, #3]
+
+       ;LDUR x1, [x0, #0]
+       ;ADD  x2, x2, x1
+       ;B main
+       ;HALT               ; halt the processor
 
 .pos 0x100                ; set image location to 0x100
 .align 8                  ; align data to an 8-byte boundry
