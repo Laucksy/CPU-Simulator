@@ -2,10 +2,10 @@ package Instructions;
 
 public class InstructionList {
     private static String[][] list = {
-            {"HALT", "O", "000000", "halt"},
-            {"PUSH", "O", "000001", "push"},
-            {"POP", "O", "000010", "pop"},
-            {"NOP", "O", "000011", "nop"},
+            {"NOP", "O", "000000", "nop"},
+            {"HALT", "O", "000001", "halt"},
+            {"PUSH", "O", "000010", "push"},
+            {"POP", "O", "000011", "pop"},
 
             {"ADD", "R", "001000", "add"},
             {"SUB", "R", "001001", "subtract"},
@@ -22,8 +22,8 @@ public class InstructionList {
             {"ANDI", "I", "010011", "and immediate"},
             {"IORI", "I", "010100", "inclusive or immediate"},
             {"EORI", "I", "010101", "exclusive or immediate"},
-            {"LSL", "R", "010110", "logical shift left"},
-            {"LSR", "R", "010111", "logical shift right"},
+            {"LSL", "I", "010110", "logical shift left"},
+            {"LSR", "I", "010111", "logical shift right"},
 
             {"LDUR", "M", "011000", "load register"},
             {"STUR", "M", "011001", "store register"},
@@ -53,6 +53,13 @@ public class InstructionList {
     public static String getTypeFromMnemonic(String mnemonic) {
         for(String[] instruction : list) {
             if (instruction[0].equals(mnemonic)) return instruction[1];
+        }
+        return "";
+    }
+
+    public static String getMnemonicFromOpcode(String opcode) {
+        for(String[] instruction : list) {
+            if (instruction[2].equals(opcode)) return instruction[0];
         }
         return "";
     }
