@@ -1,14 +1,33 @@
 .wordsize 16              ; sets the machine wordsize
-.regcnt    4              ; 4 general purpose registers
+.regcnt    8              ; 4 general purpose registers
 .maxmem   0x400      ; max memory size is 32 bytes
 
 .pos 0x0
 main:
-       ADDI x2, x2, #20   ; store 20 in register x2
-       ADD x2, x2, x2     ; add x2 to itself
-       ;MOVZ x0, data      ; store pointer at data to x0
-       LDUR x1, [x0, #0]  ; load data at start into register x1
-       ADD  x2, x2, x1    ; add 0xAB to 10 and store in register x2
+       ADDI x0, x0, #5
+       ADDIS x0, x0, #5
+       ADD x0, x0, x0
+       ADDS x0, x0, x0
+       SUBI x1, x1, #5
+       SUBIS x1, x1, #5
+       SUB x1, x1, x1
+       SUBS x1, x1, x1
+
+       ADDI x2, x2, #15
+       ANDI x2, x2, #9
+       AND x2, x2, x2
+       ADDI x3, x3, #0
+       IORI x3, x3, #9
+       IOR x3, x3, x3
+       ADDI x4, x4, #6
+       EORI x4, x4, #9
+       EOR x4, x4, x4
+       ADDI x5, x5, #1
+       LSL x5, x5, #3
+       LSR x5, x5, #2
+
+       LDUR x1, [x0, #0]
+       ADD  x2, x2, x1
        B main
        HALT               ; halt the processor
 
