@@ -27,7 +27,7 @@ public class InstructionList {
 
             {"LDUR", "M", "011000", "load register"},
             {"STUR", "M", "011001", "store register"},
-            {"LDURW", "M", "011010", "load signed word"},
+            {"LDURW", "M", "011010", "load word"},
             {"STURW", "M", "011011", "store word"},
             {"LDURH", "M", "011100", "load half"},
             {"STURH", "M", "011101", "store half"},
