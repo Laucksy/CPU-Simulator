@@ -49,8 +49,8 @@ public class LogicalOperations {
         char[] num = new char[32];
         for (int i = 0; i < 32; i++) num[i] = '0';
 
-        for (int i = 0; i < 32; i++) {
-            if (i - shift > one.length) num[i] = one[i - shift];
+        for (int i = 31; i >= 0; i--) {
+            if (i - shift >= 0) num[i] = one[i - shift];
             else num[i] = '0';
         }
         return num;
