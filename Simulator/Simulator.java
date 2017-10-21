@@ -4,7 +4,6 @@ import java.util.*;
 import java.io.*;
 import Instructions.*;
 import Operations.*;
-import sun.rmi.runtime.Log;
 
 public class Simulator {
     private int wordsize;
@@ -143,6 +142,22 @@ public class Simulator {
                 else if (mnemonic.equals("EORI")) setRegister(target, LogicalOperations.eor(firstReg, immediate));
                 else if (mnemonic.equals("LSL")) setRegister(target, LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16), 2)));
                 else if (mnemonic.equals("LSR")) setRegister(target, LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16), 2)));
+
+                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+            } else if (type.equals("M")) {
+                int first = Integer.parseInt(ins.substring(6, 11), 2);
+                int second = Integer.parseInt(ins.substring(11, 16), 2);
+                char[] offset = ArithmeticOperations.convertString(ins.substring(16));
+
+                char[] firstReg = pad(this.registers[first], 32);
+                char[] secondReg = pad(this.registers[second], 32);
+
+                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+
+                if (mnemonic.equals("LDUR")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
+                else if (mnemonic.equals("LDURW")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
+                else if (mnemonic.equals("LDURH")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 16));
+                else if (mnemonic.equals("LDURB")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 8));
 
                 // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
             }
