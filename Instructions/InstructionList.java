@@ -36,11 +36,13 @@ public class InstructionList {
 
             {"CBZ", "B", "100000", "compare and branch on equal 0"},
             {"CBNZ", "B", "100001", "compare and branch on not equal 0"},
-            {"B.cond", "B", "100010", "branch conditionally"},
+            {"B.EQ", "B", "100010", "branch equal"},
+            {"B.LT", "B", "100011", "branch less than"},
+            {"B.GT", "B", "100100", "branch greater than"},
 
-            {"B", "B", "100011", "branch"},
-            {"BR", "B", "100100", "branch to register"},
-            {"BL", "B", "100101", "branch with link"}
+            {"B", "B", "100101", "branch"},
+            {"BR", "B", "100110", "branch to register"},
+            {"BL", "B", "100111", "branch with link"}
     };
 
     public static String getOpcodeFromMnemonic(String mnemonic) {
