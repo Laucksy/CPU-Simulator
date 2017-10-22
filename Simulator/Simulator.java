@@ -12,6 +12,10 @@ public class Simulator {
     private char[][] registers;
     private Byte[] memory;
 
+    private SimulatorGUI gui;
+    private int pc;
+    private String currentInstruction;
+
     public static void main(String[] args) {
         try {
             Scanner reader = new Scanner(new File(args[0]));
@@ -25,14 +29,14 @@ public class Simulator {
 
             System.out.println(format + "," + wordsize + "," + regcnt + "," + maxmem);
 
-            Simulator sim = new Simulator(wordsize, regcnt, maxmem);
-            sim.execute(args[0], format);
+            Simulator sim = new Simulator(wordsize, regcnt, maxmem, args[0], format);
+            // sim.execute(args[0], format);
         } catch (FileNotFoundException e) {
             System.out.println("BBB" + e);
         }
     }
 
-    public Simulator(int w, int r, int m) {
+    public Simulator(int w, int r, int m, String filename, String format) {
         this.wordsize = w;
         this.regcnt = r;
         this.maxmem = m;
@@ -48,6 +52,17 @@ public class Simulator {
         for (int i = 0; i < m; i++) {
             this.memory[i] = Byte.decode("00000000");
         }
+
+        loadFromMemory(filename, format);
+        this.pc = 0;
+        this.loadInstruction();
+
+        this.gui = new SimulatorGUI(this);
+        this.drawGUI();
+    }
+
+    public void drawGUI() {
+        this.gui.draw(this.memory, this.registers, this.pc, this.currentInstruction, ArithmeticOperations.getFlags());
     }
 
     public void printState(String format) {
@@ -88,121 +103,118 @@ public class Simulator {
         }
     }
 
-    public void execute(String filename, String format) {
-        loadFromMemory(filename, format);
+    public void loadInstruction() {
+        this.currentInstruction = byteToBinary(this.memory[this.pc])
+                                    + byteToBinary(this.memory[this.pc+1])
+                                    + byteToBinary(this.memory[this.pc+2])
+                                    + byteToBinary(this.memory[this.pc+3]);
+    }
 
-        int pc = 0;
-        boolean halt = false;
-        while (pc < this.maxmem - 4 && !halt) {
-            String ins = byteToBinary(this.memory[pc]) + byteToBinary(this.memory[pc+1]) + byteToBinary(this.memory[pc+2]) + byteToBinary(this.memory[pc+3]);
-            // System.out.println(ins);
+    public void executeInstruction() {
+        if (pc >= this.maxmem || pc == -1) return;
 
-            String opcode = ins.substring(0, 6);
-            String mnemonic = InstructionList.getMnemonicFromOpcode(opcode);
-            String type = InstructionList.getTypeFromMnemonic(mnemonic);
-            System.out.println(mnemonic + " " + type);
+        String opcode = this.currentInstruction.substring(0, 6);
+        String mnemonic = InstructionList.getMnemonicFromOpcode(opcode);
+        String type = InstructionList.getTypeFromMnemonic(mnemonic);
+        System.out.println(mnemonic + " " + type);
 
-            if (type.equals("R")) {
-                int first = Integer.parseInt(ins.substring(6, 11), 2);
-                int second = Integer.parseInt(ins.substring(11, 16), 2);
-                int target = Integer.parseInt(ins.substring(16, 21), 2);
+        if (type.equals("R")) {
+            int first = Integer.parseInt(this.currentInstruction.substring(6, 11), 2);
+            int second = Integer.parseInt(this.currentInstruction.substring(11, 16), 2);
+            int target = Integer.parseInt(this.currentInstruction.substring(16, 21), 2);
 
-                char[] firstReg = pad(this.registers[first], 32);
-                char[] secondReg = pad(this.registers[second], 32);
+            char[] firstReg = pad(this.registers[first], 32);
+            char[] secondReg = pad(this.registers[second], 32);
 
-                // System.out.println("R INS " + ins);
-                // System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
+            // System.out.println("R INS " + ins);
+            // System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("ADD")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
-                else if (mnemonic.equals("ADDS")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
-                else if (mnemonic.equals("SUB")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
-                else if (mnemonic.equals("SUBS")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
+            if (mnemonic.equals("ADD")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
+            else if (mnemonic.equals("ADDS")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
+            else if (mnemonic.equals("SUB")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
+            else if (mnemonic.equals("SUBS")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
 
-                else if (mnemonic.equals("AND")) setRegister(target, LogicalOperations.and(firstReg, secondReg));
-                else if (mnemonic.equals("IOR")) setRegister(target, LogicalOperations.ior(firstReg, secondReg));
-                else if (mnemonic.equals("EOR")) setRegister(target, LogicalOperations.eor(firstReg, secondReg));
+            else if (mnemonic.equals("AND")) setRegister(target, LogicalOperations.and(firstReg, secondReg));
+            else if (mnemonic.equals("IOR")) setRegister(target, LogicalOperations.ior(firstReg, secondReg));
+            else if (mnemonic.equals("EOR")) setRegister(target, LogicalOperations.eor(firstReg, secondReg));
 
-                // System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
-            } else if (type.equals("I")) {
-                int first = Integer.parseInt(ins.substring(6, 11), 2);
-                int target = Integer.parseInt(ins.substring(11, 16), 2);
-                char[] immediate = ArithmeticOperations.convertString(ins.substring(16));
+            // System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
+            this.pc += 4;
+        } else if (type.equals("I")) {
+            int first = Integer.parseInt(this.currentInstruction.substring(6, 11), 2);
+            int target = Integer.parseInt(this.currentInstruction.substring(11, 16), 2);
+            char[] immediate = ArithmeticOperations.convertString(this.currentInstruction.substring(16));
 
-                char[] firstReg = pad(this.registers[first], 32);
+            char[] firstReg = pad(this.registers[first], 32);
 
-                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("ADDI")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
-                else if (mnemonic.equals("ADDIS")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
-                else if (mnemonic.equals("SUBI")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
-                else if (mnemonic.equals("SUBIS")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
+            if (mnemonic.equals("ADDI")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
+            else if (mnemonic.equals("ADDIS")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
+            else if (mnemonic.equals("SUBI")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
+            else if (mnemonic.equals("SUBIS")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
 
-                else if (mnemonic.equals("ANDI")) setRegister(target, LogicalOperations.and(firstReg, immediate));
-                else if (mnemonic.equals("IORI")) setRegister(target, LogicalOperations.ior(firstReg, immediate));
-                else if (mnemonic.equals("EORI")) setRegister(target, LogicalOperations.eor(firstReg, immediate));
-                else if (mnemonic.equals("LSL")) setRegister(target, LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16), 2)));
-                else if (mnemonic.equals("LSR")) setRegister(target, LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16), 2)));
+            else if (mnemonic.equals("ANDI")) setRegister(target, LogicalOperations.and(firstReg, immediate));
+            else if (mnemonic.equals("IORI")) setRegister(target, LogicalOperations.ior(firstReg, immediate));
+            else if (mnemonic.equals("EORI")) setRegister(target, LogicalOperations.eor(firstReg, immediate));
+            else if (mnemonic.equals("LSL")) setRegister(target, LogicalOperations.lsl(firstReg, Integer.parseInt(this.currentInstruction.substring(16), 2)));
+            else if (mnemonic.equals("LSR")) setRegister(target, LogicalOperations.lsr(firstReg, Integer.parseInt(this.currentInstruction.substring(16), 2)));
 
-                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
-            } else if (type.equals("M")) {
-                int first = Integer.parseInt(ins.substring(6, 11), 2);
-                int second = Integer.parseInt(ins.substring(11, 16), 2);
-                char[] offset = ArithmeticOperations.convertString(ins.substring(16));
+            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+            this.pc += 4;
+        } else if (type.equals("M")) {
+            int first = Integer.parseInt(this.currentInstruction.substring(6, 11), 2);
+            int second = Integer.parseInt(this.currentInstruction.substring(11, 16), 2);
+            char[] offset = ArithmeticOperations.convertString(this.currentInstruction.substring(16));
 
-                char[] firstReg = pad(this.registers[first], 32);
-                char[] secondReg = pad(this.registers[second], 32);
+            char[] firstReg = pad(this.registers[first], 32);
+            char[] secondReg = pad(this.registers[second], 32);
 
-                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("LDUR")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
-                else if (mnemonic.equals("LDURW")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
-                else if (mnemonic.equals("LDURH")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 16));
-                else if (mnemonic.equals("LDURB")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 8));
+            if (mnemonic.equals("LDUR")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
+            else if (mnemonic.equals("LDURW")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
+            else if (mnemonic.equals("LDURH")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 16));
+            else if (mnemonic.equals("LDURB")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 8));
 
-                else if (mnemonic.equals("STUR")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 32);
-                else if (mnemonic.equals("STURW")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 32);
-                else if (mnemonic.equals("STURH")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 16);
-                else if (mnemonic.equals("STURB")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 8);
+            else if (mnemonic.equals("STUR")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 32);
+            else if (mnemonic.equals("STURW")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 32);
+            else if (mnemonic.equals("STURH")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 16);
+            else if (mnemonic.equals("STURB")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 8);
 
-                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
-            } else if (type.equals("B")) {
-                int pc_tmp = pc;
-                int first = Integer.parseInt(ins.substring(6, 11), 2);
-                char[] address = ArithmeticOperations.convertString(ins.substring(11));
+            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+            this.pc += 4;
+        } else if (type.equals("B")) {
+            int pc_tmp = pc;
+            int first = Integer.parseInt(this.currentInstruction.substring(6, 11), 2);
+            char[] address = ArithmeticOperations.convertString(this.currentInstruction.substring(11));
 
-                char[] firstReg = pad(this.registers[first], 32);
+            char[] firstReg = pad(this.registers[first], 32);
 
-                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("CBZ")) pc = BranchOperations.cbz(firstReg, address, pc);
-                else if (mnemonic.equals("CBNZ")) pc = BranchOperations.cbnz(firstReg, address, pc);
-                else if (mnemonic.equals("B")) pc = BranchOperations.b(address);
-                else if (mnemonic.equals("BR")) pc = BranchOperations.br(firstReg);
-                else if (mnemonic.equals("BL")) pc = BranchOperations.bl(this.registers, firstReg, pc);
-                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
-                System.out.println("Set PC from " + pc_tmp + " to " + pc);
-            } else if (type.equals("O")) {
-                int first = Integer.parseInt(ins.substring(6, 11), 2);
-                char[] address = ArithmeticOperations.convertString(ins.substring(11));
+            if (mnemonic.equals("CBZ")) this.pc = BranchOperations.cbz(firstReg, address, pc);
+            else if (mnemonic.equals("CBNZ")) this.pc = BranchOperations.cbnz(firstReg, address, pc);
+            else if (mnemonic.equals("B")) this.pc = BranchOperations.b(address);
+            else if (mnemonic.equals("BR")) this.pc = BranchOperations.br(firstReg);
+            else if (mnemonic.equals("BL")) this.pc = BranchOperations.bl(this.registers, firstReg, pc);
+            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+            System.out.println("Set PC from " + pc_tmp + " to " + pc);
+        } else if (type.equals("O")) {
+            int first = Integer.parseInt(this.currentInstruction.substring(6, 11), 2);
+            char[] address = ArithmeticOperations.convertString(this.currentInstruction.substring(11));
 
-                char[] firstReg = pad(this.registers[first], 32);
+            char[] firstReg = pad(this.registers[first], 32);
 
-                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-                if (mnemonic.equals("PUSH")) pc = BranchOperations.cbz(firstReg, address, pc);
-                else if (mnemonic.equals("POP")) pc = BranchOperations.cbnz(firstReg, address, pc);
-                else if (mnemonic.equals("HALT")) halt = true;
-                else if (mnemonic.equals("NOP")) {}
-            }
-
-            // char[] result = ArithmeticOperations.add(ArithmeticOperations.convertString("1111"), ArithmeticOperations.complement(ArithmeticOperations.convertString("1010")));
-            // char[] result = ArithmeticOperations.subtract(ArithmeticOperations.convertString("1111"), ArithmeticOperations.convertString("1010"));
-            // System.out.print("SUB 15 - 10 = ");
-            // for (char c : result) System.out.print(c);
-            // System.out.println();
-
-            pc += 4;
+            if (mnemonic.equals("PUSH")) this.pc = BranchOperations.cbz(firstReg, address, pc);
+            else if (mnemonic.equals("POP")) this.pc = BranchOperations.cbnz(firstReg, address, pc);
+            else if (mnemonic.equals("HALT")) this.pc = -1;
+            else if (mnemonic.equals("NOP")) this.pc += 4;
         }
+        this.loadInstruction();
+        this.drawGUI();
     }
 
     public void loadFromMemory(String filename, String format) {
