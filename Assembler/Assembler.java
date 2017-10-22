@@ -9,7 +9,7 @@ public class Assembler {
 
     public static void main(String[] args) {
         Assembler assem = new Assembler();
-        assem.assemble("../data/test.as", false);
+        assem.assemble(args[0], false);
     }
 
     public Assembler() {
@@ -91,7 +91,7 @@ public class Assembler {
         } else if (type.equals("B")) {
             if (line.length == 2) {
                 if (line[0].equals("BR")) instruction = new InstructionTypeB(line[0], opcode, line[1], "0");
-                else instruction = new InstructionTypeB(line[0], opcode, "0", line[1]);
+                else instruction = new InstructionTypeB(line[0], opcode, "x0", line[1]);
             } else instruction = new InstructionTypeB(line[0], opcode, line[1], line[2]);
         } else if (type.equals("O")) {
             instruction = new InstructionTypeO(line[0], opcode, line[1]);
@@ -202,8 +202,8 @@ public class Assembler {
             for(int i = 0; i < labels.size(); i++) {
                 while (data.contains(labels.get(i)[0])) {
                     String unpadded = Integer.toBinaryString(Integer.parseInt(labels.get(i)[1]));
-                    while (unpadded.length() < 32) unpadded = "0" + unpadded;
-                    data = data.substring(0, data.indexOf(labels.get(i)[0])) + unpadded + data.substring(data.indexOf(labels.get(i)[0]) + 32);
+                    while (unpadded.length() < 21) unpadded = "0" + unpadded;
+                    data = data.substring(0, data.indexOf(labels.get(i)[0])) + unpadded + data.substring(data.indexOf(labels.get(i)[0]) + 21);
                 }
             }
 
