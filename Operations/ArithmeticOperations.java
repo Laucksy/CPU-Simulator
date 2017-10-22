@@ -6,6 +6,10 @@ public class ArithmeticOperations {
     private static boolean flagC = false;
     private static boolean flagV = false;
 
+    public static boolean[] getFlags() {
+        return new boolean[] {flagZ, flagN, flagC, flagV};
+    }
+
     public static char[] convertString(String s) {
         char[] num = new char[32];
         for (int i = 0; i < 32; i++) num[i] = '0';
