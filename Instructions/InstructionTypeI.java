@@ -12,6 +12,13 @@ public class InstructionTypeI extends Instruction {
         this.immediate = i;
     }
 
+    public InstructionTypeI(String ins) {
+        super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
+        this.first = "x" + Integer.parseInt(ins.substring(6, 11), 2);
+        this.target = "x" + Integer.parseInt(ins.substring(11, 16), 2);
+        this.immediate = "#" + Integer.parseInt(ins.substring(16), 2);
+    }
+
     public String getFirst() {
         return this.first;
     }

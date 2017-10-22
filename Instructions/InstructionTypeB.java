@@ -10,6 +10,12 @@ public class InstructionTypeB extends Instruction {
         this.address = a;
     }
 
+    public InstructionTypeB(String ins) {
+        super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
+        this.first = "" + Integer.parseInt(ins.substring(6, 11), 2);
+        this.address = "0x" + Integer.parseInt(ins.substring(11), 2);
+    }
+
     public String getFirst() {
         return this.first;
     }
@@ -28,9 +34,9 @@ public class InstructionTypeB extends Instruction {
 
     public String getBinary() {
         if (this.address.substring(0, 2).equals("0x")) {
-            return this.opcode + this.first + this.decimalToBinary(this.address.substring(2), 21);
+            return this.opcode + this.decimalToBinary(this.first.substring(1), 5) + this.decimalToBinary(this.address.substring(2), 21);
         } else {
-            return this.opcode + this.first + this.address + this.decimalToBinary("0", 21 - this.address.length());
+            return this.opcode + this.decimalToBinary(this.first.substring(1), 5) + this.address + this.decimalToBinary("0", 21 - this.address.length());
         }
     }
 

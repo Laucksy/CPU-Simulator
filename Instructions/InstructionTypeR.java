@@ -14,6 +14,14 @@ public class InstructionTypeR extends Instruction {
         this.shift = sh;
     }
 
+    public InstructionTypeR(String ins) {
+        super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
+        this.first = "x" + Integer.parseInt(ins.substring(6, 11), 2);
+        this.second = "x" + Integer.parseInt(ins.substring(11, 16), 2);
+        this.target = "x" + Integer.parseInt(ins.substring(16, 21), 2);
+        this.shift = "" + Integer.parseInt(ins.substring(21), 2);
+    }
+
     public String getFirst() {
         return this.first;
     }

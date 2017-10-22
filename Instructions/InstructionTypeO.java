@@ -8,6 +8,11 @@ public class InstructionTypeO extends Instruction {
         this.value = v;
     }
 
+    public InstructionTypeO(String ins) {
+        super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
+        this.value = "" + Integer.parseInt(ins.substring(6), 2);
+    }
+
     public String getValue() {
         return this.value;
     }

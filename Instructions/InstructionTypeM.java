@@ -12,6 +12,13 @@ public class InstructionTypeM extends Instruction {
         this.offset = off.replace("]", "");
     }
 
+    public InstructionTypeM(String ins) {
+        super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
+        this.first = "x" + Integer.parseInt(ins.substring(6, 11), 2);
+        this.second = "x" + Integer.parseInt(ins.substring(11, 16), 2);
+        this.offset = "#" + Integer.parseInt(ins.substring(16), 2);
+    }
+
     public String getFirst() {
         return this.first;
     }
