@@ -165,6 +165,34 @@ public class Simulator {
                 else if (mnemonic.equals("STURB")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 8);
 
                 // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+            } else if (type.equals("B")) {
+                int pc_tmp = pc;
+                int first = Integer.parseInt(ins.substring(6, 11), 2);
+                char[] address = ArithmeticOperations.convertString(ins.substring(11));
+
+                char[] firstReg = pad(this.registers[first], 32);
+
+                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+
+                if (mnemonic.equals("CBZ")) pc = BranchOperations.cbz(firstReg, address, pc);
+                else if (mnemonic.equals("CBNZ")) pc = BranchOperations.cbnz(firstReg, address, pc);
+                else if (mnemonic.equals("B")) pc = BranchOperations.b(address);
+                else if (mnemonic.equals("BR")) pc = BranchOperations.br(firstReg);
+                else if (mnemonic.equals("BL")) pc = BranchOperations.bl(this.registers, firstReg, pc);
+                // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+                System.out.println("Set PC from " + pc_tmp + " to " + pc);
+            } else if (type.equals("O")) {
+                int first = Integer.parseInt(ins.substring(6, 11), 2);
+                char[] address = ArithmeticOperations.convertString(ins.substring(11));
+
+                char[] firstReg = pad(this.registers[first], 32);
+
+                // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
+
+                if (mnemonic.equals("PUSH")) pc = BranchOperations.cbz(firstReg, address, pc);
+                else if (mnemonic.equals("POP")) pc = BranchOperations.cbnz(firstReg, address, pc);
+                else if (mnemonic.equals("HALT")) halt = true;
+                else if (mnemonic.equals("NOP")) {}
             }
 
             // char[] result = ArithmeticOperations.add(ArithmeticOperations.convertString("1111"), ArithmeticOperations.complement(ArithmeticOperations.convertString("1010")));

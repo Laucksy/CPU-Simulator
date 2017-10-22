@@ -20,12 +20,12 @@ public class MemoryOperations {
     }
 
     public static void store(Byte[] memory, char[] value, char[] reg, char[] offset, int bits) {
-        System.out.println("STORING " + printCharArray(reg) + " " + printCharArray(offset) + " " + bits);
+        // System.out.println("STORING " + printCharArray(reg) + " " + printCharArray(offset) + " " + bits);
         char[] address = ArithmeticOperations.add(reg, offset);
         String addr = "";
         for (int i = 0; i < address.length; i++) addr = addr + address[i];
 
-        System.out.println(addr + " " + Integer.parseInt(addr, 2));
+        // System.out.println(addr + " " + Integer.parseInt(addr, 2));
 
         int mem = Integer.parseInt(addr, 2);
 
@@ -36,9 +36,9 @@ public class MemoryOperations {
         Byte byte3 = binaryToByte(val.substring(16, 24));
         Byte byte4 = binaryToByte(val.substring(24));
 
-        System.out.println("BYTES " + byte1 + " " + byte2 + " " + byte3 + " " + byte4);
+        // System.out.println("BYTES " + byte1 + " " + byte2 + " " + byte3 + " " + byte4);
 
-        System.out.println("BEFORE " + memory[mem] + " " + memory[mem+1] + " " + memory[mem+2] + " " + memory[mem+3]);
+        // System.out.println("BEFORE " + memory[mem] + " " + memory[mem+1] + " " + memory[mem+2] + " " + memory[mem+3]);
 
         if (bits == 8) memory[mem] = byte4;
         else if (bits == 16) {
@@ -51,7 +51,7 @@ public class MemoryOperations {
             memory[mem+2] = byte3;
             memory[mem+3] = byte4;
         }
-        System.out.println("AFTER " + memory[mem] + " " + memory[mem+1] + " " + memory[mem+2] + " " + memory[mem+3]);
+        // System.out.println("AFTER " + memory[mem] + " " + memory[mem+1] + " " + memory[mem+2] + " " + memory[mem+3]);
     }
 
     public static String byteToBinary(Byte b) {

@@ -89,7 +89,10 @@ public class Assembler {
         } else if (type.equals("M")) {
             instruction = new InstructionTypeM(line[0], opcode, line[1], line[2], line[3]);
         } else if (type.equals("B")) {
-            instruction = new InstructionTypeB(line[0], opcode, line[1]);
+            if (line.length == 2) {
+                if (line[0].equals("BR")) instruction = new InstructionTypeB(line[0], opcode, line[1], "0");
+                else instruction = new InstructionTypeB(line[0], opcode, "0", line[1]);
+            } else instruction = new InstructionTypeB(line[0], opcode, line[1], line[2]);
         } else if (type.equals("O")) {
             instruction = new InstructionTypeO(line[0], opcode, line[1]);
         }
