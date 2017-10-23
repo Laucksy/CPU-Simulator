@@ -29,7 +29,7 @@ public class Visualizer {
             }
 
             boolean hex = false;
-            if (args.length == 1 && args[0].equals("hex")) hex = true;
+            if (args.length == 2 && args[1].equals("hex")) hex = true;
 
             Visualizer v = new Visualizer();
             v.showMemory(memory, "0x" + Integer.toHexString(0), "0x" + Integer.toHexString(memory.size()), hex);
