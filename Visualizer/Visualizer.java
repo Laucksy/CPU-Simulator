@@ -1,15 +1,11 @@
 package Visualizer;
 
-import Instructions.*;
-import Simulator.Simulator;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import javax.swing.*;
 
 public class Visualizer {
     private Frame memFrame;
@@ -19,7 +15,8 @@ public class Visualizer {
             ArrayList<Byte> memory = new ArrayList<Byte>();
 
             Scanner reader = new Scanner(new File(args[0]));
-            reader.nextLine();
+            reader.nextLine(); // Skip line of parameters
+            // Fill memory array
             while (reader.hasNextLine()) {
                 String[] line = reader.nextLine().split("\t");
                 for (String l : line) {
@@ -41,6 +38,9 @@ public class Visualizer {
         }
     }
 
+    /**
+     * Creates Visualizer object and initializes AWT Frame
+     */
     public Visualizer() {
         this.memFrame = new Frame("Memory State");
         this.memFrame.addWindowListener(new WindowAdapter() {
@@ -51,6 +51,13 @@ public class Visualizer {
         this.memFrame.setVisible(true);
     }
 
+    /**
+     * Adds all of the GUI components to the AWT Frame
+     * @param memory - Byte array from the simulator that represents the entirety of memory
+     * @param low - The start point for displaying the bounded memory
+     * @param high - The end point for displaying the bounded memory
+     * @param hex - True to display the memory as hex values, false to display as binary
+     */
     private void showMemory(ArrayList<Byte> memory, String low, String high, boolean hex) {
         this.memFrame.removeAll();
 
