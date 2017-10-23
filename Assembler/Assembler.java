@@ -9,6 +9,12 @@ public class Assembler {
     private int bytesWritten;
     private int align;
 
+    private int numR;
+    private int numI;
+    private int numM;
+    private int numB;
+    private int numO;
+
     public static void main(String[] args) {
         Assembler assem = new Assembler();
         assem.assemble(args[0], false);
@@ -21,6 +27,12 @@ public class Assembler {
         this.writer = null;
         this.bytesWritten = 0;
         this.align = 1;
+
+        this.numR = 0;
+        this.numI = 0;
+        this.numM = 0;
+        this.numB = 0;
+        this.numO = 0;
     }
 
     /**
@@ -91,6 +103,14 @@ public class Assembler {
         if (this.writer != null) this.writer.close();
         // Handles second pass
         this.replaceLabelsAddSpace(file, labels);
+
+        System.out.println("STATISTICS:");
+        System.out.println("Number of R type instructions: " + this.numR);
+        System.out.println("Number of I type instructions: " + this.numI);
+        System.out.println("Number of M type instructions: " + this.numM);
+        System.out.println("Number of B type instructions: " + this.numB);
+        System.out.println("Number of O type instructions: " + this.numO);
+        System.out.println("Total Instructions: " + (this.numR + this.numI + this.numM + this.numB + this.numO));
     }
 
     /**
@@ -102,19 +122,24 @@ public class Assembler {
         Instruction instruction = null;
         String type = InstructionList.getTypeFromMnemonic(line[0]);
         String opcode = InstructionList.getOpcodeFromMnemonic(line[0]);
-        System.out.println(Arrays.asList(line));
+        // System.out.println(Arrays.asList(line));
         if (type.equals("R")) {
+            this.numR++;
             instruction = new InstructionTypeR(line[0], opcode, line[1], line[2], line[3], "0");
         } else if (type.equals("I")) {
+            this.numI++;
             instruction = new InstructionTypeI(line[0], opcode, line[1], line[2], line[3]);
         } else if (type.equals("M")) {
+            this.numM++;
             instruction = new InstructionTypeM(line[0], opcode, line[1], line[2], line[3]);
         } else if (type.equals("B")) {
+            this.numB++;
             if (line.length == 2) {
                 if (line[0].equals("BR")) instruction = new InstructionTypeB(line[0], opcode, line[1], "0");
                 else instruction = new InstructionTypeB(line[0], opcode, "x0", line[1]);
             } else instruction = new InstructionTypeB(line[0], opcode, line[1], line[2]);
         } else if (type.equals("O")) {
+            this.numO++;
             instruction = new InstructionTypeO(line[0], opcode, line[1]);
         }
 
