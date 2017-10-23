@@ -44,6 +44,16 @@ public class Simulator {
         }
     }
 
+    /**
+     * Initializes the Simulator, the GUI, and loads the object file
+     * @param w - wordsize of the CPU
+     * @param r - register count of the CPU
+     * @param m - max memory size of the CPU
+     * @param s - starting stack pointer of the CPU
+     * @param fn - filename of the object file
+     * @param f - format of the information (binary or hex)
+     * @param n - true for noisy mode, false for quiet mode
+     */
     public Simulator(int w, int r, int m, int s, String fn, String f, boolean n) {
         this.wordsize = w;
         this.regcnt = r;
@@ -58,10 +68,17 @@ public class Simulator {
         this.reset();
     }
 
+    /**
+     * Updates the GUI with the current CPU state
+     */
     public void drawGUI() {
         this.gui.draw(this.memory, this.registers, this.pc, this.currentInstruction, ArithmeticOperations.getFlags());
     }
 
+    /**
+     * Prints the CPU state to the command line
+     * @param format - Binary or hex output
+     */
     public void printState(String format) {
         boolean hex = format == "hex";
         System.out.println("Wordsize: " + this.wordsize);
@@ -100,6 +117,9 @@ public class Simulator {
         }
     }
 
+    /**
+     * Reset the simulator to its initial state, reloads from object file
+     */
     public void reset() {
         this.registers = new char[this.regcnt][this.wordsize];
         this.memory = new Byte[this.maxmem];
@@ -121,6 +141,9 @@ public class Simulator {
         this.drawGUI();
     }
 
+    /**
+     * Writes the memory to a dump file and the CPU state to another dump file
+     */
     public void writeToFile() {
         try {
             PrintWriter writer = new PrintWriter(new FileWriter("data/memory-dump.o"));
@@ -149,6 +172,10 @@ public class Simulator {
         }
     }
 
+    /**
+     * Loads the next instruction from memory into the instruction register
+     * Equivalent to fetch in the fetch-execute cycle
+     */
     public void loadInstruction() {
         if (this.pc >= this.maxmem || this.pc == -1) return;
         String ins = byteToBinary(this.memory[this.pc])
@@ -171,10 +198,18 @@ public class Simulator {
         if (noisy) System.out.println("LOADED INSTRUCTION " + this.currentInstruction.getPlain() + " AS " + this.currentInstruction.getBinary());
     }
 
+    /**
+     * Returns the current instruction in the instruction registers
+     * @return the current instruction as an Instruction object
+     */
     public Instruction getCurrentInstruction() {
         return this.currentInstruction;
     }
 
+    /**
+     * Executes the instruction in the instruction register and updates the program counter
+     * Equivalent to execute in the fetch-execute cycle
+     */
     public void executeInstruction() {
         if (pc >= this.maxmem || pc == -1) return;
 
@@ -182,9 +217,9 @@ public class Simulator {
         String opcode = ins.substring(0, 6);
         String mnemonic = InstructionList.getMnemonicFromOpcode(opcode);
         String type = InstructionList.getTypeFromMnemonic(mnemonic);
-        // System.out.println(mnemonic + " " + type);
 
         if (type.equals("R")) {
+            // Decodes values from instruction
             int first = Integer.parseInt(ins.substring(6, 11), 2);
             int second = Integer.parseInt(ins.substring(11, 16), 2);
             int target = Integer.parseInt(ins.substring(16, 21), 2);
@@ -192,9 +227,7 @@ public class Simulator {
             char[] firstReg = pad(this.registers[first], 32);
             char[] secondReg = pad(this.registers[second], 32);
 
-            // System.out.println("R INS " + ins);
-            // System.out.println("R TYPE " + first + "," + second + "," + target + "," + printCharArray(firstReg) + "," + printCharArray(secondReg) + "," + printCharArray(this.registers[target]));
-
+            // Handles all R type instructions and executes them
             if (mnemonic.equals("ADD")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
             else if (mnemonic.equals("ADDS")) setRegister(target, ArithmeticOperations.add(firstReg, secondReg));
             else if (mnemonic.equals("SUB")) setRegister(target, ArithmeticOperations.subtract(firstReg, secondReg));
@@ -204,17 +237,16 @@ public class Simulator {
             else if (mnemonic.equals("IOR")) setRegister(target, LogicalOperations.ior(firstReg, secondReg));
             else if (mnemonic.equals("EOR")) setRegister(target, LogicalOperations.eor(firstReg, secondReg));
 
-            // System.out.println("FINISHED R TYPE " + printCharArray(this.registers[target]));
             this.pc += 4;
         } else if (type.equals("I")) {
+            // Decodes values from instruction
             int first = Integer.parseInt(ins.substring(6, 11), 2);
             int target = Integer.parseInt(ins.substring(11, 16), 2);
             char[] immediate = ArithmeticOperations.convertString(ins.substring(16));
 
             char[] firstReg = pad(this.registers[first], 32);
 
-            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
-
+            // Handles all I type instructions and executes them
             if (mnemonic.equals("ADDI")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
             else if (mnemonic.equals("ADDIS")) setRegister(target, ArithmeticOperations.add(firstReg, immediate));
             else if (mnemonic.equals("SUBI")) setRegister(target, ArithmeticOperations.subtract(firstReg, immediate));
@@ -226,9 +258,9 @@ public class Simulator {
             else if (mnemonic.equals("LSL")) setRegister(target, LogicalOperations.lsl(firstReg, Integer.parseInt(ins.substring(16), 2)));
             else if (mnemonic.equals("LSR")) setRegister(target, LogicalOperations.lsr(firstReg, Integer.parseInt(ins.substring(16), 2)));
 
-            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
             this.pc += 4;
         } else if (type.equals("M")) {
+            // Decodes values from instruction
             int first = Integer.parseInt(ins.substring(6, 11), 2);
             int second = Integer.parseInt(ins.substring(11, 16), 2);
             char[] offset = ArithmeticOperations.convertString(ins.substring(16));
@@ -236,8 +268,7 @@ public class Simulator {
             char[] firstReg = pad(this.registers[first], 32);
             char[] secondReg = pad(this.registers[second], 32);
 
-            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
-
+            // Handles all M type instructions and executes them
             if (mnemonic.equals("LDUR")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
             else if (mnemonic.equals("LDURW")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 32));
             else if (mnemonic.equals("LDURH")) setRegister(first, MemoryOperations.load(this.memory, secondReg, offset, 16));
@@ -248,17 +279,16 @@ public class Simulator {
             else if (mnemonic.equals("STURH")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 16);
             else if (mnemonic.equals("STURB")) MemoryOperations.store(this.memory, firstReg, secondReg, offset, 8);
 
-            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
             this.pc += 4;
         } else if (type.equals("B")) {
+            // Decodes values from instruction
             int pc_tmp = pc;
             int first = Integer.parseInt(ins.substring(6, 11), 2);
             char[] address = ArithmeticOperations.convertString(ins.substring(11));
 
             char[] firstReg = pad(this.registers[first], 32);
 
-            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
-
+            // Handles all B type instructions and executes them
             if (mnemonic.equals("CBZ")) this.pc = BranchOperations.cbz(firstReg, address, pc);
             else if (mnemonic.equals("CBNZ")) this.pc = BranchOperations.cbnz(firstReg, address, pc);
             else if (mnemonic.equals("B")) this.pc = BranchOperations.b(address);
@@ -279,17 +309,17 @@ public class Simulator {
             }
             else if (mnemonic.equals("BR")) this.pc = BranchOperations.br(firstReg);
             else if (mnemonic.equals("BL")) this.pc = BranchOperations.bl(this.registers, firstReg, pc);
-            // System.out.println("FINISHED I TYPE " + printCharArray(this.registers[target]));
+
             if (this.noisy) System.out.println("SET PC FROM " + pc_tmp + " TO " + pc);
         } else if (type.equals("O")) {
+            // Decodes values from instruction
             int first = Integer.parseInt(ins.substring(6, 11), 2);
             char[] address = ArithmeticOperations.convertString(Integer.toBinaryString(this.sp));
             char[] zero = ArithmeticOperations.convertString("0");
 
             char[] firstReg = pad(this.registers[first], 32);
 
-            // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
-
+            // Handles all O type instructions and executes them
             if (mnemonic.equals("PUSH")) {
                 MemoryOperations.store(this.memory, firstReg, address, zero, 32);
                 this.sp += 4;
@@ -302,11 +332,15 @@ public class Simulator {
             else if (mnemonic.equals("HALT")) this.pc = -1;
             else if (mnemonic.equals("NOP")) this.pc += 4;
         }
+        // Loads next instruction and updates GUI
         this.loadInstruction();
         this.drawGUI();
     }
 
-    public void loadFromMemory() {
+    /**
+     * Creates memory in simulator from object file
+     */
+    private void loadFromMemory() {
         try {
             boolean hex = this.format == "hex";
             Scanner reader = new Scanner(new File(this.filename));
@@ -323,19 +357,29 @@ public class Simulator {
                     bytesLoaded++;
                 }
             }
-            // this.printState(format);
         } catch (Exception e) {
             System.out.println("AAA" + e);
         }
     }
 
-    public String byteToBinary(Byte b) {
+    /**
+     * Converts a byte object to an 8 bit binary string
+     * @param b - Byte object to convert
+     * @return 8 bit binary string representation
+     */
+    private String byteToBinary(Byte b) {
         String binary = Integer.toBinaryString(Integer.parseInt(b.toString()));
         while (binary.length() < 8) binary = "0" + binary;
         if (binary.length() > 8) binary = binary.substring(binary.length() - 8);
         return binary;
     }
 
+    /**
+     * Standardizes a character array to 32 bits
+     * @param arr - char array that isn't 32 bits
+     * @param size - size to pad to (32)
+     * @return padded char array
+     */
     public char[] pad(char[] arr, int size) {
         char[] num = new char[32];
         for (int i = 0; i < 32; i++) num[i] = '0';
@@ -344,12 +388,22 @@ public class Simulator {
         return num;
     }
 
+    /**
+     * Gets a string representation of a char array so String methods can be used on it
+     * @param arr - array to convert
+     * @return String object of char array
+     */
     public String printCharArray(char[] arr) {
         String result = "";
         for (int i = 0; i < arr.length; i++) result = result + arr[i];
         return result;
     }
 
+    /**
+     * Inserts a value into a CPU registers
+     * @param reg - number of the register to change
+     * @param val - 32 bit character array to set register to
+     */
     public void setRegister(int reg, char[] val) {
         if (noisy) System.out.println("SET REGISTER " + reg + " from " + printCharArray(this.registers[reg]) + " to " + printCharArray(val));
         this.registers[reg] = val;

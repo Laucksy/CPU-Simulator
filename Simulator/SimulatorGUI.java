@@ -11,6 +11,10 @@ public class SimulatorGUI {
     private Frame memFrame;
     private Timer timer;
 
+    /**
+     * Initializes Simulator GUI and creates the two AWT Frames (one for the memory display and one for CPU state
+     * @param s - Simulator that is being represented (used for passing commands to the simulator like execute)
+     */
     public SimulatorGUI(Simulator s) {
         this.simulator = s;
 
@@ -33,11 +37,26 @@ public class SimulatorGUI {
         this.timer = null;
     }
 
+    /**
+     * Updates both AWT Frames with new information from the simulator
+     * @param memory - Byte array of the entire memory in the simulator
+     * @param registers - Array of all of the registers in the CPU and their values
+     * @param pc - Current program counter in the CPU
+     * @param instruction - Current instruction in the CPU
+     * @param flags - Array of flags in the CPU
+     */
     public void draw(Byte[] memory, char[][] registers, int pc, Instruction instruction, boolean[] flags) {
         this.showState(registers, pc, instruction, flags);
         this.showMemory(memory);
     }
 
+    /**
+     * Updates the GUI Components in the State AWT Frame
+     * @param registers - Array of all the registers in the CPU and their values
+     * @param pc - Current program counter in the CPU
+     * @param instruction - Current instruction in the CPU
+     * @param flags - Array of flags in the CPU
+     */
     private void showState(char[][] registers, int pc, Instruction instruction, boolean[] flags) {
         this.stateFrame.removeAll();
 
@@ -193,6 +212,10 @@ public class SimulatorGUI {
         this.stateFrame.add(writeButton);
     }
 
+    /**
+     * Updates the GUI Components in the Memory AWT Frame
+     * @param memory - Byte array of the entire memory in the simulator
+     */
     private void showMemory(Byte[] memory) {
         this.memFrame.removeAll();
 
