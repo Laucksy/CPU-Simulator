@@ -1,7 +1,7 @@
-Program Counter: 0x24 (36)
-Instruction Register: 00000100000000000000000000000000(HALT 0)
+Program Counter: 0xffffffff (-1)
+Instruction Register: 00000100000000000000000000000000(HALT x0)
 Flags: 
-Z - true
+Z - false
 N - false
 C - false
 V - false
