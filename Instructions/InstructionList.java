@@ -1,6 +1,7 @@
 package Instructions;
 
 public class InstructionList {
+    // List of all instructions and their mnemonics, types, opcodes, and descriptions
     private static String[][] list = {
             {"NOP", "O", "000000", "nop"},
             {"HALT", "O", "000001", "halt"},
@@ -45,6 +46,11 @@ public class InstructionList {
             {"BL", "B", "100111", "branch with link"}
     };
 
+    /**
+     * Does a lookup of the instruction list to get the opcode from a mnemonic
+     * @param mnemonic - mnemonic to search for
+     * @return opcode for the associated mnemonic
+     */
     public static String getOpcodeFromMnemonic(String mnemonic) {
         for(String[] instruction : list) {
             if (instruction[0].equals(mnemonic)) return instruction[2];
@@ -52,6 +58,11 @@ public class InstructionList {
         return "";
     }
 
+    /**
+     * Does a lookup of the instruction list to get the type from a mnemonic
+     * @param mnemonic - mnemonic to search for
+     * @return type for the associated mnemonic
+     */
     public static String getTypeFromMnemonic(String mnemonic) {
         for(String[] instruction : list) {
             if (instruction[0].equals(mnemonic)) return instruction[1];
@@ -59,6 +70,11 @@ public class InstructionList {
         return "";
     }
 
+    /**
+     * Does a lookup of the instruction list to get the mnemonic from an opcode
+     * @param opcode - opcode to search for
+     * @return mnemonic for the associated opcode
+     */
     public static String getMnemonicFromOpcode(String opcode) {
         for(String[] instruction : list) {
             if (instruction[2].equals(opcode)) return instruction[0];
