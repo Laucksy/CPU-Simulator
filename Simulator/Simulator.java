@@ -18,6 +18,7 @@ public class Simulator {
 
     private SimulatorGUI gui;
     private int pc;
+    private int sp;
     private Instruction currentInstruction;
 
     public static void main(String[] args) {
@@ -30,22 +31,24 @@ public class Simulator {
             int wordsize = Integer.parseInt(params[1].substring(3));
             int regcnt = Integer.parseInt(params[2].substring(3));
             int maxmem = Integer.parseInt(params[3].substring(5), 16);
+            int stack = Integer.parseInt(params[4].substring(5), 16);
 
-            System.out.println(format + "," + wordsize + "," + regcnt + "," + maxmem);
+            // System.out.println(format + "," + wordsize + "," + regcnt + "," + maxmem);
 
             boolean n = args.length == 2 && args[1].equals("noisy") ? true : false;
 
-            Simulator sim = new Simulator(wordsize, regcnt, maxmem, args[0], format, n);
+            Simulator sim = new Simulator(wordsize, regcnt, maxmem, stack, args[0], format, n);
             // sim.execute(args[0], format);
         } catch (FileNotFoundException e) {
             System.out.println("BBB" + e);
         }
     }
 
-    public Simulator(int w, int r, int m, String fn, String f, boolean n) {
+    public Simulator(int w, int r, int m, int s, String fn, String f, boolean n) {
         this.wordsize = w;
         this.regcnt = r;
         this.maxmem = m;
+        this.sp = s;
         this.filename = fn;
         this.format = f;
         this.noisy = n;
@@ -147,6 +150,7 @@ public class Simulator {
     }
 
     public void loadInstruction() {
+        if (this.pc >= this.maxmem || this.pc == -1) return;
         String ins = byteToBinary(this.memory[this.pc])
                                     + byteToBinary(this.memory[this.pc+1])
                                     + byteToBinary(this.memory[this.pc+2])
@@ -279,14 +283,22 @@ public class Simulator {
             if (this.noisy) System.out.println("SET PC FROM " + pc_tmp + " TO " + pc);
         } else if (type.equals("O")) {
             int first = Integer.parseInt(ins.substring(6, 11), 2);
-            char[] address = ArithmeticOperations.convertString(ins.substring(11));
+            char[] address = ArithmeticOperations.convertString(Integer.toBinaryString(this.sp));
+            char[] zero = ArithmeticOperations.convertString("0");
 
             char[] firstReg = pad(this.registers[first], 32);
 
             // System.out.println("I TYPE " + first + "," + target + "," + printCharArray(immediate) + "," + printCharArray(firstReg) + "," + printCharArray(this.registers[target]));
 
-            if (mnemonic.equals("PUSH")) this.pc = BranchOperations.cbz(firstReg, address, pc);
-            else if (mnemonic.equals("POP")) this.pc = BranchOperations.cbnz(firstReg, address, pc);
+            if (mnemonic.equals("PUSH")) {
+                MemoryOperations.store(this.memory, firstReg, address, zero, 32);
+                this.sp += 4;
+                this.pc += 4;
+            }
+            else if (mnemonic.equals("POP")) {
+                this.sp -= 4;
+                this.pc += 4;
+            }
             else if (mnemonic.equals("HALT")) this.pc = -1;
             else if (mnemonic.equals("NOP")) this.pc += 4;
         }

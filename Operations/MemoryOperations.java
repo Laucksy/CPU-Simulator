@@ -51,6 +51,7 @@ public class MemoryOperations {
             memory[mem+2] = byte3;
             memory[mem+3] = byte4;
         }
+
         // System.out.println("AFTER " + memory[mem] + " " + memory[mem+1] + " " + memory[mem+2] + " " + memory[mem+3]);
     }
 
