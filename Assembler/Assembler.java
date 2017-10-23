@@ -32,7 +32,6 @@ public class Assembler {
 
         for(int i = 0; i < tokens.size(); i++) {
             String[] line = tokens.get(i);
-            // System.out.println(Arrays.asList(line));
 
             if (line.length == 0) {}
             else if (i <= 2) {
@@ -82,6 +81,7 @@ public class Assembler {
         Instruction instruction = null;
         String type = InstructionList.getTypeFromMnemonic(line[0]);
         String opcode = InstructionList.getOpcodeFromMnemonic(line[0]);
+        System.out.println(Arrays.asList(line));
         if (type.equals("R")) {
             instruction = new InstructionTypeR(line[0], opcode, line[1], line[2], line[3], "0");
         } else if (type.equals("I")) {
@@ -146,7 +146,9 @@ public class Assembler {
         } else if (line.contains(".")) {
             tokens = line.split(" ");
         } else if (line.contains("HALT")) {
-            tokens = new String[] {"HALT", "0"};
+            tokens = new String[] {"HALT", "x0"};
+        } else if (line.contains("POP")) {
+            tokens = new String[] {"POP", "x0"};
         } else {
             String opcode = line.split(" ")[0];
             line = line.substring(line.indexOf(" ") + 1).trim();
@@ -196,7 +198,11 @@ public class Assembler {
 
             this.writer = new PrintWriter(new FileWriter(file));
 
-            this.writer.println(line1);
+            String stackLoc = "512";
+            for (String[] l : labels) {
+                if (l[0].equals("stack")) stackLoc = l[1];
+            }
+            this.writer.println(line1 + ":SP-0x" + Integer.toHexString(Integer.parseInt(stackLoc)));
 
             // for (String[] l : labels) System.out.println(Arrays.asList(l));
             for(int i = 0; i < labels.size(); i++) {
