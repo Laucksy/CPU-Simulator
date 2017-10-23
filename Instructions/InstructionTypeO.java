@@ -10,7 +10,7 @@ public class InstructionTypeO extends Instruction {
 
     public InstructionTypeO(String ins) {
         super(InstructionList.getMnemonicFromOpcode(ins.substring(0, 6)), ins.substring(0, 6));
-        this.value = "" + Integer.parseInt(ins.substring(6), 2);
+        this.value = "x" + Integer.parseInt(ins.substring(6, 11), 2);
     }
 
     public String getValue() {
@@ -26,7 +26,7 @@ public class InstructionTypeO extends Instruction {
     }
 
     public String getBinary() {
-        return this.opcode + this.decimalToBinary(value, 26);
+        return this.opcode + this.decimalToBinary(value.substring(1), 5) + this.decimalToBinary("0", 21);
     }
 
     public String getHex() {
