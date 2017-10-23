@@ -1,4 +1,3 @@
 compile:
-	javac -d compiled/ Instructions/*
-	javac -d compiled/ Assembler/*
-	javac -d compiled/ Simulator/*
+	javac -d compiled/ $$(find . -name '*.java')
+	javadoc -d doc/ $$(find . -name '*.java')
