@@ -1,3 +1,5 @@
+package Assembler;
+
 import Instructions.*;
 import java.util.*;
 import java.io.*;
@@ -12,17 +14,26 @@ public class Assembler {
         assem.assemble(args[0], false);
     }
 
+    /**
+     * Initialize the instance variables of the Assembler
+     */
     public Assembler() {
         this.writer = null;
         this.bytesWritten = 0;
         this.align = 1;
     }
 
+    /**
+     * Assemble the code into an object format
+     * @param filename - file to write .o to
+     * @param hex - true for output in hex, false for output in binary
+     */
     public void assemble(String filename, boolean hex) {
         String prefix = filename.substring(0, filename.lastIndexOf("/") + 1);
         String name = filename.substring(filename.lastIndexOf("/") + 1, filename.length() - 3);
         String file = prefix + name + ".o";
 
+        // Gets the configuration from first lines
         ArrayList<String[]> tokens = tokenize(filename);
         String format = hex ? "#hex" : "#binary";
         String wordsize = "16";
@@ -35,12 +46,15 @@ public class Assembler {
 
             if (line.length == 0) {}
             else if (i <= 2) {
+                // Handles first lines of directives
                 if (line[0].equals(".wordsize")) wordsize = line[1];
                 else if (line[0].equals(".regcnt")) regcnt = line[1];
                 else if (line[0].equals(".maxmem")) maxmem = line[1];
 
+                // Writes first line of .o file
                 if (i == 2) write(file, format + ":WS-" + wordsize + ":RC-" + regcnt + ":MM-" + maxmem);
             } else if (line[0].charAt(0) == '.') {
+                // Handles other directives
                 if (line[0].equals(".pos")) {
                     int newPos = Integer.parseInt(line[1].substring(2), 16);
                     while (this.bytesWritten < newPos) write(file, "00000000");
@@ -57,26 +71,33 @@ public class Assembler {
 
                     if (hex) while (unpadded.length() < bytes) unpadded = "0" + unpadded;
                     else while (unpadded.length() < bytes * 8) unpadded = "0" + unpadded;
-                    // System.out.println("TRANSLATION " + unpadded);
                     write(file, unpadded);
 
                     while (this.bytesWritten % this.align != 0) write(file, "00000000");
                 }
             } else if (line[0].charAt(line[0].length() - 1) == ':') {
+                // Adds label to list for second pass
                 labels.add(new String[] {line[0].substring(0, line[0].length() - 1), (new Integer(this.bytesWritten)).toString()});
             } else {
+                // Handles all instructions
                 Instruction instruction = extract(line);
                 if (instruction != null) {
-                    // System.out.println("TRANSLATION " + instruction.getPlain() + "     " + instruction.getBinary());
                     write(file, hex ? instruction.getHex() : instruction.getBinary());
                     while (this.bytesWritten % this.align != 0) write(file, "00000000");
                 }
             }
         }
+        // Finishes first pass
         if (this.writer != null) this.writer.close();
+        // Handles second pass
         this.replaceLabelsAddSpace(file, labels);
     }
 
+    /**
+     * Extracts an instruction from a set of tokens of a line
+     * @param line - array of tokens that represents one line of Assembly
+     * @return Instruction object of the Assembly
+     */
     private Instruction extract(String[] line) {
         Instruction instruction = null;
         String type = InstructionList.getTypeFromMnemonic(line[0]);
@@ -100,14 +121,17 @@ public class Assembler {
         return instruction;
     }
 
+    /**
+     * Splits the entire .as file into tokens
+     * @param filename - filename of .as file
+     * @return ArrayList of token arrays, one per line
+     */
     public ArrayList<String[]> tokenize(String filename) {
         ArrayList<String[]> tokens = new ArrayList<String[]>();
         try {
             Scanner reader = new Scanner(new File(filename));
-
             while (reader.hasNextLine()) {
                 String line = (reader.nextLine().split(";")[0]);
-
                 tokens.add(tokenizeLine(line));
             }
         } catch (Exception e) {
@@ -116,6 +140,11 @@ public class Assembler {
         return tokens;
     }
 
+    /**
+     * Splits one line of Assembly into tokens
+     * @param line - line of assembly to tokenize
+     * @return String array of tokens
+     */
     private String[] tokenizeLine(String line) {
         line = line.trim();
         String[] tokens;
@@ -123,6 +152,7 @@ public class Assembler {
         if (line.equals("")) {
             tokens = new String[]{};
         } else if (line.contains(":") && line.contains(".")) {
+            // Handles label and directive in same line
             String label = line.split(" ")[0];
             line = line.substring(line.indexOf(":") + 1).trim();
 
@@ -132,6 +162,7 @@ public class Assembler {
             tokens[0] = label;
             for(int i = 0; i < split.length; i++) tokens[i+1] = split[i];
         } else if (line.contains(":")) {
+            // Handles label
             String label = line.split(" ")[0];
             line = line.substring(line.indexOf(":") + 1).trim();
             String opcode = line.split(" ")[0];
@@ -144,12 +175,16 @@ public class Assembler {
             tokens[1] = opcode;
             for(int i = 0; i < split.length; i++) tokens[i+2] = split[i];
         } else if (line.contains(".")) {
+            // Handles directives
             tokens = line.split(" ");
         } else if (line.contains("HALT")) {
+            // Special case for HALT because of single input
             tokens = new String[] {"HALT", "x0"};
         } else if (line.contains("POP")) {
+            // Special case for POP because of single input
             tokens = new String[] {"POP", "x0"};
         } else {
+            // Handles instructions
             String opcode = line.split(" ")[0];
             line = line.substring(line.indexOf(" ") + 1).trim();
 
@@ -160,6 +195,7 @@ public class Assembler {
             for(int i = 0; i < split.length; i++) tokens[i+1] = split[i];
         }
 
+        // Remove invalid tokens (like empty strings)
         List<String> list = new ArrayList<String>(Arrays.asList(tokens));
         list.removeAll(Arrays.asList(""));
         tokens = new String[list.size()];
@@ -169,6 +205,12 @@ public class Assembler {
         return tokens;
     }
 
+    /**
+     * Writes one line to file
+     * First pass of Assembler
+     * @param file - filename of .as file
+     * @param line - line to write to file
+     */
     private void write(String file, String line) {
         if (line.equals("")) return;
         if (line.charAt(0) != '#' && line.length() % 8 != 0) return;
@@ -190,6 +232,12 @@ public class Assembler {
         }
     }
 
+    /**
+     * Replaces labels with address and format file with spaces
+     * Second pass of Assembler
+     * @param file - filename of .as file
+     * @param labels - list of labels to replace
+     */
     private void replaceLabelsAddSpace(String file, ArrayList<String[]> labels) {
         try {
             Scanner reader = new Scanner(new File(file));
@@ -198,13 +246,14 @@ public class Assembler {
 
             this.writer = new PrintWriter(new FileWriter(file));
 
+            // Finds stack label and sets it as a parameter at the top of the .o file
             String stackLoc = "512";
             for (String[] l : labels) {
                 if (l[0].equals("stack")) stackLoc = l[1];
             }
             this.writer.println(line1 + ":SP-0x" + Integer.toHexString(Integer.parseInt(stackLoc)));
 
-            // for (String[] l : labels) System.out.println(Arrays.asList(l));
+            // Search for instances of labels and replace with binary addresses
             for(int i = 0; i < labels.size(); i++) {
                 while (data.contains(labels.get(i)[0])) {
                     String unpadded = Integer.toBinaryString(Integer.parseInt(labels.get(i)[1]));
@@ -213,6 +262,7 @@ public class Assembler {
                 }
             }
 
+            // Format .o file as four bytes to a line with a tab between each byte
             int bitsInLine = 0;
             for(int i = 0; i < data.length(); i++) {
                 this.writer.print(data.charAt(i));
