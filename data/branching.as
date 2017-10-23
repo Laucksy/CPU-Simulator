@@ -14,6 +14,9 @@ main:
 test:
        SUB x1, x1, x1
        SUBS x1, x1, x1
+       PUSH x0
+       PUSH x0
+       POP
 
        HALT
 
